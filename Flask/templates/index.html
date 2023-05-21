@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body style="background-color:Gray">
+    <div class="container">
+  <div id="myPlot" style="width:858px; height:612px; position:absolute; left:0px; top:120px"></div>
+  <canvas id="myCanvas" width="696" height="430" style="border:1px solid #000000; position:absolute; left:80px;top:220px"></canvas>
+    </div>
+    
+    <div class="container">
+    <h1 style="text-align:center;color:Orange">WaveForms<strong> View</strong></h1>
+    <hr style="width: 1200px; height: 2px; margin-left: auto; margin-right: auto; background-color:white; border: 0 none; margin-top: 0px;margin-bottom:0px; position:absolute">
+  <p  style="position:absolute; left:1010px; top:210px; color:White; font-size:150%">Wavegen</p>
+  <hr style="width: 400px; height: 2px; margin-left: auto; margin-right: auto; background-color:white; border: 0 none; margin-top: 0px;margin-bottom:0px; position:absolute;left:830px; top:240px">
+      <p id="confirmWave" style="position:absolute; left:850px; top:310px; color:White"></p>
+      <p id="confirmApp" style="position:absolute; left:850px; top:460px; color:White"></p>
+      <p id="confirmFreq" style="position:absolute; left:850px; top:560px; color:White"></p>
+      <p id="confirmOff" style="position:absolute; left:850px; top:660px; color:White"></p>
+    </div>
+    
+    <div class="container">
+  <!-- button run_stop confirm -->
+  <button onclick="sysRun()" id="btnRun" style="position:absolute; left:900px; top:150px" type="button" class="btn btn-default btn-lg">Run
+    <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+    </button>
+  <button onclick="sysStop();portStop()" id="btnStop" style="position:absolute; left:1100px; top:150px" type="button" class="btn btn-default btn-lg">Stop
+    <span class="glyphicon glyphicon-stop" aria-hidden="true"></span>
+    </button>
+    <button onclick="exitPage();exitView()" id="btnExit" style="position:absolute; left:1020px; top:120px" type="button" class="btn btn-default ">Exit</button>
+  <!-- button parameter confirm -->
+  <button onclick="confirmWave();setStyle()"style="position:absolute;left:1140px; top:270px" type="button" class="btn btn-default">confirm</button>
+  <button onclick="valueVerifyApp();setVpp()"style="position:absolute;left:1140px; top:420px" type="button" class="btn btn-default ">confirm</button>
+  <button onclick="valueVerifyFreq();setFreq()"style="position:absolute;left:1140px; top:520px" type="button" class="btn btn-default ">confirm</button>
+  <button onclick="valueVerifyOff();setOffset()"style="position:absolute;left:1140px; top:620px" type="button" class="btn btn-default ">confirm</button>
+    </div>
+
+    <form>
+        <div class="form-group">
+    <label for="Enter Amplitude" style="position:absolute;left:850px; top:400px; color:White">Amplitude [0, 5000] (mV)</lable>
+    <input type="text" class="form-control" id="Amplitude" placeholder="Amplitude">
+        </div>
+        <div class="form-group">
+    <label for="Enter Frequency" style="position:absolute;left:850px; top:500px; color:White">Frequency (0, 50000] (HZ)</lable>
+    <input type="text" class="form-control" id="Frequency" placeholder="Frequency">
+        </div>
+        <div class="form-group">
+    <label for="Enter Offset" style="position:absolute;left:850px; top:600px; color:White">Offset [0, 5000] (mV)</lable>
+    <input type="text" class="form-control" id="Offset" placeholder="Offset">
+        </div>
+    </form>
+
+    <form class="form-inline">
+      <div class="form-group" style="position:absolute;left:100px; top:120px">
+      <label style="color:White">USB:</label>
+    <select  id="portOptions" class="form-control" style="width:250px;height:30px"></select>
+        <button onclick="sendPort();connectPort()" id="btnConnect" type="button" class="btn btn-default ">connect</button>
+        <button onclick="stopPort();disconnectPort()" id="btnDisconnect" type="button" class="btn btn-default ">disconnect</button>
+        <button onclick="getStatus()"  style="position:relative;left:100px;top:0px" type="button" class="btn btn-default">get current state
+        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+        </button> 
+      </div>
+    </form>
+
+    <div class="form-group" style="position:absolute;left:850px; top:250px">
+    <label for="waveOptions" style="color:White">Wave Type:</label>
+    <select  id="waveOptions" class="form-control" style="width:200px;height:30px">
+  <option>DC</option>
+  <option>Sine Wave</option>
+  <option>Triangle Wave</option>
+  <option>Sawtooth Wave</option>
+  <option>Square Wave(Digital)</option>
+    </select>
+    </div>
+  
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>    
+    <!-- Here we will have the scripts -->
+    <script>
+
+    function valueVerifyApp(){
+  var app = document.getElementById("Amplitude");
+  if (!app.value) {
+    alert("ERROR: please enter a value");
+  } 
+  else if(app.value<0||app.value>5000){
+    alert("ERROR:Amplitude needs to be [0,5000] mV.");
+  }
+  else if (app.value>=0 && app.value<=5000){
+    confirmApp();
+  }
+  else {
+    alert("ERROR: please enter a value");
+  }
+    }
+
+    function valueVerifyFreq(){
+  var freq = document.getElementById("Frequency");
+  if(!freq.value){
+    alert("ERROR: please enter a value");
+  } 
+  else if(freq.value<=0||freq.value>50000){
+    alert("ERROR:frequency needs to be (0,50000] HZ");
+  }
+  else if (freq.value>0 && freq.value<=50000){
+    confirmFreq();
+  }
+  else {
+    alert("ERROR: please enter a value");
+  }
+    }
+
+    function valueVerifyOff(){
+  var off = document.getElementById("Offset");
+  if(!off.value) {
+    alert("ERROR: please enter a value");
+  }
+  else if(off.value< 0||off.value>5000){
+    alert("ERROR:Amplitude needs to be [0,5000] mV.");
+  }
+  else if (off.value>=0 && off.value<=5000){
+    confirmOff();
+  } 
+ else {
+    alert("ERROR: please enter a value");
+  }
+    }
+
+    function confirmWave(){
+  var wave = document.getElementById("waveOptions");
+  var conWave = document.getElementById("confirmWave");
+  conWave.innerHTML = "Current Wave Type: "+ wave.options[wave.selectedIndex].text;
+  conWave.value = wave.value;
+  if (systemRun==1){wavePlot()};
+    }
+    
+    function confirmApp(){
+  var app = document.getElementById("Amplitude");
+  var conApp = document.getElementById("confirmApp");
+  conApp.innerHTML = "Current Amplitude: "+ app.value;
+  conApp.value = app.value/2;
+  if (systemRun==1){wavePlot()};
+    }
+    
+    function confirmFreq(){
+  var freq = document.getElementById("Frequency");
+  var conFreq = document.getElementById("confirmFreq");
+  conFreq.innerHTML = "Current Frequency: "+ freq.value;
+  conFreq.value = freq.value;
+  if (systemRun==1){wavePlot()};
+    }
+    
+    function confirmOff(){
+  var off = document.getElementById("Offset");
+  var conOff = document.getElementById("confirmOff");
+  conOff.innerHTML = "Current Offset: "+ off.value;
+  conOff.value = off.value;
+  if (systemRun==1){wavePlot()};
+    }
+
+    const Pi = Math.PI
+
+    function createPlot(xValues,yValues){
+  var data = [{x:xValues, y:yValues, mode:"lines",line: { color: "Orange"}}];
+  var layout = {
+          xaxis: { title: "Time (s)",color:"white",gridcolor:"rgba(255,255,255,0.4)"},
+          yaxis: { title: "Voltage (mV)",color:"white",gridcolor:"rgba(255,255,255,0.4"},
+        plot_bgcolor:"black",
+          paper_bgcolor:"Gray"
+    
+          };
+  Plotly.newPlot("myPlot", data, layout);
+    }
+
+    function clearPlot(){
+  var xValues = [];
+  var yValues = [];
+  for (var x = 0; x <= 10; x += 0.1) {
+    xValues.push(x);
+      yValues.push(0);
+  }
+  createPlot(xValues,yValues);
+    }
+    
+    clearPlot()
+
+  var conWave = document.getElementById("confirmWave");
+  var conApp = document.getElementById("confirmApp"); 
+  var conFreq = document.getElementById("confirmFreq");
+  var conOff = document.getElementById("confirmOff");
+    
+    function wavePlot(){
+
+    if(conWave.value=="Sine Wave"){
+      //sineWave(1,2,1/(2*Math.PI));
+      sineWave(eval(conOff.value),eval(conApp.value),eval(conFreq.value));
+      
+    }
+    else if(conWave.value=="Triangle Wave"){
+      triangleWave(eval(conOff.value),eval(conApp.value),eval(conFreq.value));
+      
+    }
+    else if(conWave.value=="Sawtooth Wave"){
+      sawtoothWave(eval(conOff.value),eval(conApp.value),eval(conFreq.value));
+      
+    }
+    else if(conWave.value=="Square Wave(Digital)"){
+      squareWave(eval(conOff.value),eval(conApp.value),eval(conFreq.value));
+      
+    }
+    else if(conWave.value=="DC"){
+      dcWave(eval(conOff.value));
+    }
+  
+    }
+
+    function sineWave(off,app,freq){
+      var xValues = [];
+      var yValues = [];
+      for (var x = 0; x <= 1/freq*4; x += 1/freq*4/1000) {
+      xValues.push(x);
+      yValues.push(app*Math.sin(x*2*Math.PI*freq)+app-off);
+      } 
+  createPlot(xValues,yValues);
+    }
+
+    function triangleWave(off,app,freq){
+  var xValues = [];
+  var yValues = [];
+  var T = 1/freq;
+  var t = 0;
+  for(var x = 0; x <= T*4 ; x += T*4/1000){
+    xValues.push(x);
+    let t = (x+off)%T;
+    if(t < T/4){
+      yValues.push(t*app/(T/4)+app-off);
+    }
+    else if(t > 3*T/4){
+      yValues.push(((t * app ) / (T/4)- 4*app)+app-off);
+    }
+    else{
+      yValues.push(((-t * app ) / (T/4)+ 2* app)+app-off);
+    }
+  }
+  createPlot(xValues,yValues);
+    }
+
+    function sawtoothWave(off,app,freq){
+  var xValues = [];
+  var yValues = [];
+  var T = 1/freq;
+  var t = 0;
+  for(var x = 0; x <= T*4 ; x += T*4/1000){
+    xValues.push(x);
+    let t = (x+off)%T;
+    if(t < T){
+      yValues.push(t*2*app/T-off);
+    }
+    else{
+      yValues.push(-off);
+    }
+  }
+  createPlot(xValues,yValues);
+    }
+
+
+    function squareWave(off,app,freq){
+  var xValues = [];
+  var yValues = [];
+  var T = 1/freq;
+  var t = 0;
+  for(var x = 0; x <= T*4 ; x += T*4/1000){
+    xValues.push(x);
+    let t = (x+off)%T;
+    if(t < T/2){
+      yValues.push(-off);
+    }
+    else{
+      yValues.push(2*app-off);
+    }
+  }
+  createPlot(xValues,yValues);
+    }
+
+    function dcWave(off){
+  var xValues = [];
+  var yValues = [];
+  for(var x = 0; x <= 10 ; x += 0.1){
+    xValues.push(x);
+    yValues.push(-off);
+  }
+  createPlot(xValues,yValues);
+    }
+
+    //End
+
+    //Section: get Port
+    var portSelect= document.getElementById("portOptions");
+    var userClick = 0;
+    portSelect.addEventListener('click',function handleClick() {getPort();} );
+    //End
+
+    var btnconnect = document.getElementById("btnConnect");
+    var btndisconnect = document.getElementById("btnDisconnect");
+   
+function connectPort(){
+ 
+  btnconnect.style.background="#5cb85c" ;
+  btndisconnect.style.background="#E5E7E9" ;
+ 
+}
+
+function disconnectPort(){
+ 
+  btnconnect.style.background="#E5E7E9" ;
+  btndisconnect.style.background="#5cb85c" ;
+ 
+}
+
+function exitPage(){
+   systemRun=0;
+   conWave.value = !conWave.value;
+   conOff.value = !conOff.value;
+   conApp.value = !conApp.value;
+   conFreq.value = !conFreq.value;
+  document.body.innerHTML = "<span style='font-size: 24px; color: red;'>Exited successfully! Thank you for using WaveForms View.</span>";
+ 
+}
+
+
+    //Section:change color of run_stop button
+    var systemRun=0;
+    var btnrun = document.getElementById("btnRun");
+    var btnstop = document.getElementById("btnStop");
+    sysStop();
+
+    function sysRun(){
+  systemRun=1;
+  btnrun.style.background="#1e90ff" ;
+  btnstop.style.background="#E5E7E9" ;
+  if(!conWave.value||((!conOff.value || !conApp.value || !conFreq.value) && conWave.value!="DC")||(conWave.value=="DC" && !conOff.value)){
+    alert("ERROR: Parameters cannot be blank.");
+    sysStop();
+    
+  }
+  else{ 
+    wavePlot();
+    portRun();
+  }
+
+    }
+   function sysStop(){
+  systemRun=0;
+  clearPlot();
+  
+  btnstop.style.background="#1e90ff";
+  btnrun.style.background="#E5E7E9" ;
+
+    }
+    //End
+
+    </script>
+    <script>
+  function tesPort(){
+    var example_array = {"ports":{
+       0:"COM3",
+       1:"COM4",
+       2:"COM5"
+  }};
+  var select = document.getElementById("portOptions");
+  select.options.length=0;
+  for(index in example_array["ports"]) {
+      select.options[select.options.length] = new Option(example_array["ports"][index], index);
+  }
+  }
+    </script>
+
+    <script>
+
+    var port_URL = "{{ url_for('port') }}";
+    var state_URL = "{{ url_for('state') }}";
+    var stop_URL = "{{ url_for('stop') }}";
+    var run_URL = "{{ url_for('run') }}";
+    var style_URL = "{{ url_for('style', type = 'wave') }}";
+    var freq_URL = "{{ url_for('freq',number='freqValue') }}";
+    var vpp_URL = "{{ url_for('vpp',number = 'vppValue') }}";
+    var offset_URL = "{{ url_for('offset',number = 'offsetValue') }}";
+    var selectPort_URL = "{{ url_for('select',type = 'port')}}";
+    var stopPort_URL = "{{ url_for('disconnect')}}";
+    var exitView_URL = "{{ url_for('exit')}}";
+    </script>
+     
+    <script src="{{ url_for('static', filename='lab.js') }}"></script>
+  </body>
+</html>
+
+
+
+

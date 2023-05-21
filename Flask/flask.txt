@@ -1,0 +1,4 @@
+env\Scripts\activate
+set FLASK_app=laboratory.py
+flask run --host=0.0.0.0
+natapp -authtoken=8f24d694b06fed9d
